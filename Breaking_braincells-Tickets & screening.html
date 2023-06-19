@@ -1,85 +1,115 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
-    <title>Breaking braincells</title>
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #000;
-            color: #fff;
+<title>Breaking braincells</title>
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #000;
+        color: #fff;
+    }
+
+    header {
+        background-color: #000;
+        padding: 20px;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 36px;
+        margin: 0;
+        padding: 10px;
+        color: #fff;
+    }
+
+    main {
+        padding: 20px;
+    }
+
+    h2 {
+        font-size: 24px;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        color: #fff;
+    }
+
+    p {
+        font-size: 16px;
+        line-height: 1.5;
+        margin-bottom: 20px;
+    }
+
+    footer {
+        background-color: #000;
+        padding: 20px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    footer p {
+        margin: 0;
+        padding: 10px;
+        color: #999;
+    }
+  <style/>
+  </head>
+  <body>
+    <!-- Replace "test" with your own sandbox Business account app client ID -->
+    <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD"></script>
+    <!-- Set up a container element for the button -->
+    <div id="paypal-button-container"></div>
+    <script>
+      paypal.Buttons({
+        // Order is created on the server and the order id is returned
+        createOrder() {
+          return fetch("/my-server/create-paypal-order", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            // use the "body" param to optionally pass additional order information
+            // like product skus and quantities
+            body: JSON.stringify({
+              cart: [
+                {
+                  sku: "YOUR_PRODUCT_STOCK_KEEPING_UNIT",
+                  quantity: "YOUR_PRODUCT_QUANTITY",
+                },
+              ],
+            }),
+          })
+          .then((response) => response.json())
+          .then((order) => order.id);
+        },
+        // Finalize the transaction on the server after payer approval
+        onApprove(data) {
+          return fetch("/my-server/capture-paypal-order", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              orderID: data.orderID
+            })
+          })
+          .then((response) => response.json())
+          .then((orderData) => {
+            // Successful capture! For dev/demo purposes:
+            console.log('Capture result', orderData, JSON.stringify(orderData, null, 2));
+            const transaction = orderData.purchase_units[0].payments.captures[0];
+            alert(`Transaction ${transaction.status}: ${transaction.id}\n\nSee console for all available details`);
+            // When ready to go live, remove the alert and show a success message within this page. For example:
+            // const element = document.getElementById('paypal-button-container');
+            // element.innerHTML = '<h3>Thank you for your payment!</h3>';
+            // Or go to another URL:  window.location.href = 'thank_you.html';
+          });
         }
-
-        header {
-            background-color: #000;
-            padding: 20px;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 36px;
-            margin: 0;
-            padding: 10px;
-            color: #fff;
-        }
-
-        main {
-            padding: 20px;
-        }
-
-        h2 {
-            font-size: 24px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            color: #fff;
-        }
-
-        p {
-            font-size: 16px;
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }
-
-        footer {
-            background-color: #000;
-            padding: 20px;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        footer p {
-            margin: 0;
-            padding: 10px;
-            color: #999;
-        }
-    </style>
-</head>
-
-<body>
-    <nav>
-        
-        <div class="w3-bar  w3-xlarge w3-black">
-            <a href="index.html" class="w3-bar-item w3-button w3-hover-black w3-mobile"><img src="Logo.jpg" width="300"></a>
-          </div>
-    </nav>
-
-    <main>
-        <section>
-            <div class="w3-container w3-black w3-center">
-                <h1><strong><em>Tickets</em></strong></h1>
-         
-        </div>
-     </section>
-    </main>
-
-    <footer>
-        <p>© 2023 Jack productions™. All rights reserved.</p>
-        <img src="https://yt3.googleusercontent.com/X0ymm-lK9oJrFfQHGCB-bKZ8LkIVm1bSBJ4P4YxnnwsqrSj-He5qirP9usIp259IRwEDXpq9wME=s176-c-k-c0x00ffffff-no-rj" width="100">
-    </footer>
-</body>
-
+      }).render('#paypal-button-container');
+    </script>
+  </body>
 </html>
